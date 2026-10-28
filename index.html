@@ -188,7 +188,7 @@
     return s.replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   }
 
-  // 97967330 / 4797967330 / +47 979 67 330 → +47 97 96 73 30
+  // 12345678 / 4712345678 / +47 123 45 678 → +47 12 34 56 78
   function formaterTelefon(raw) {
     let siffer = raw.replace(/\D/g, "");
     if (siffer.length === 10 && siffer.startsWith("47")) siffer = siffer.slice(2);
@@ -198,7 +198,7 @@
   }
 
   function lagSignatur({ navn, tittel, telefon }, medLogo) {
-    const stil = "font-family:Aptos,Calibri,Arial,sans-serif;font-size:11pt;color:#000000;line-height:1.35;";
+    const stil = "font-family:Aptos,Calibri,Arial,sans-serif;font-size:11.5pt;color:#000000;line-height:1.35;";
     let html =
       `<div style="${stil}">` +
       `Vennlig hilsen<br>` +
