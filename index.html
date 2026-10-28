@@ -92,6 +92,24 @@
   details { margin-top: 22px; font-size: .9rem; }
   summary { cursor: pointer; font-weight: 600; }
   details ol { padding-left: 20px; line-height: 1.6; }
+  .sprakvalg {
+    display: inline-flex;
+    background: var(--noytral);
+    border: 1px solid var(--kant);
+    border-radius: 999px;
+    padding: 3px;
+    margin-bottom: 20px;
+  }
+  .sprakvalg button {
+    background: transparent;
+    color: var(--tekst);
+    padding: 7px 16px;
+    font-size: .9rem;
+  }
+  .sprakvalg button[aria-pressed="true"] {
+    background: var(--mork-gronn);
+    color: #fff;
+  }
   [hidden] { display: none !important; }
 </style>
 </head>
@@ -111,8 +129,11 @@
     <label for="navn">Navn</label>
     <input id="navn" name="name" required placeholder="Ola Nordmann">
 
-    <label for="tittel">Stilling</label>
+    <label for="tittel">Stilling på norsk</label>
     <input id="tittel" name="organization-title" required placeholder="Konsulent">
+
+    <label for="tittelEn">Stilling på engelsk</label>
+    <input id="tittelEn" required placeholder="Consultant">
 
     <label for="telefon">Telefon</label>
     <input id="telefon" name="tel" type="tel" required placeholder="12 34 56 78">
@@ -130,6 +151,11 @@
     <p class="tom" id="tom">Fyll inn skjemaet og trykk «Generer signatur».</p>
 
     <div id="resultat" hidden>
+      <div class="sprakvalg" role="group" aria-label="Språk">
+        <button type="button" data-sprak="no" aria-pressed="true">Norsk</button>
+        <button type="button" data-sprak="en" aria-pressed="false">English</button>
+      </div>
+
       <div class="sig-blokk">
         <div class="sig-topp">
           <h3>Ny e-post</h3>
@@ -154,6 +180,7 @@
           <li>Lag en til kalt «Holte – svar», og lim inn signaturen for svar.</li>
           <li>Under standardsignaturer: velg «Holte – ny» for nye meldinger og «Holte – svar» for svar/videresending.</li>
           <li>Lagre.</li>
+          <li>Trenger du engelsk også, lager du to signaturer til (for eksempel «Holte – ny EN» og «Holte – svar EN») og velger dem manuelt når du skriver på engelsk.</li>
         </ol>
       </details>
     </div>
@@ -171,8 +198,12 @@
   const felt = {
     navn: document.getElementById("navn"),
     tittel: document.getElementById("tittel"),
+    tittelEn: document.getElementById("tittelEn"),
     telefon: document.getElementById("telefon"),
   };
+
+  const HILSEN = { no: "Vennlig hilsen", en: "Best regards" };
+  let sprak = "no";
 
   if (location.protocol === "file:") {
     document.getElementById("lokal-varsel").hidden = false;
@@ -197,13 +228,14 @@
     return raw.trim();
   }
 
-  function lagSignatur({ navn, tittel, telefon }, medLogo) {
+  function lagSignatur({ navn, tittel, tittelEn, telefon }, medLogo) {
     const stil = "font-family:Aptos,Calibri,Arial,sans-serif;font-size:11.5pt;color:#000000;line-height:1.35;";
+    const stilling = sprak === "en" ? tittelEn : tittel;
     let html =
       `<div style="${stil}">` +
-      `Vennlig hilsen<br>` +
+      `${HILSEN[sprak]}<br>` +
       `${escape(navn)}<br>` +
-      `${escape(tittel)}<br>` +
+      `${escape(stilling)}<br>` +
       `${escape(telefon)}`;
 
     if (medLogo) {
@@ -217,8 +249,9 @@
     return html + `</div>`;
   }
 
-  function lagRenTekst({ navn, tittel, telefon }, medLogo) {
-    let t = `Vennlig hilsen\n${navn}\n${tittel}\n${telefon}`;
+  function lagRenTekst({ navn, tittel, tittelEn, telefon }, medLogo) {
+    const stilling = sprak === "en" ? tittelEn : tittel;
+    let t = `${HILSEN[sprak]}\n${navn}\n${stilling}\n${telefon}`;
     if (medLogo) t += `\n${NETTSIDE}`;
     return t;
   }
@@ -230,6 +263,7 @@
     data = {
       navn: felt.navn.value.trim(),
       tittel: felt.tittel.value.trim(),
+      tittelEn: felt.tittelEn.value.trim(),
       telefon: formaterTelefon(felt.telefon.value),
     };
     felt.telefon.value = data.telefon;
@@ -238,10 +272,24 @@
       localStorage.setItem("holte-signatur", JSON.stringify(data));
     } catch (e) {}
 
-    document.getElementById("sig-ny").innerHTML = lagSignatur(data, true);
-    document.getElementById("sig-svar").innerHTML = lagSignatur(data, false);
+    visSignaturer();
     document.getElementById("tom").hidden = true;
     document.getElementById("resultat").hidden = false;
+  });
+
+  function visSignaturer() {
+    document.getElementById("sig-ny").innerHTML = lagSignatur(data, true);
+    document.getElementById("sig-svar").innerHTML = lagSignatur(data, false);
+  }
+
+  document.querySelectorAll("[data-sprak]").forEach(knapp => {
+    knapp.addEventListener("click", () => {
+      sprak = knapp.dataset.sprak;
+      document.querySelectorAll("[data-sprak]").forEach(k =>
+        k.setAttribute("aria-pressed", String(k === knapp))
+      );
+      visSignaturer();
+    });
   });
 
   async function kopier(id, knapp) {
