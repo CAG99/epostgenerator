@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="no">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>E-postsignatur – Holte Consulting</title>
+<meta name="robots" content="noindex">
+<style>
+  :root {
+    --mork-gronn: #043538;
+    --energisk: #daff47;
+    --lys-gul: #feffd2;
+    --lys-lilla: #d8d5ff;
+    --noytral: #f5f3ec;
+    --kant: #dcd6cb;
+    --tekst: #303030;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "ABC Favorit", Aptos, system-ui, -apple-system, "Segoe UI", sans-serif;
+    color: var(--tekst);
+    background: var(--noytral);
+  }
+  header {
+    background: var(--mork-gronn);
+    color: #fff;
+    padding: 28px 16px;
+  }
+  header .inner, main { max-width: 980px; margin: 0 auto; }
+  header h1 { margin: 0; font-size: 1.6rem; font-weight: 500; }
+  header p { margin: 6px 0 0; opacity: .8; }
+  main {
+    padding: 28px 16px 60px;
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+  @media (max-width: 760px) { main { grid-template-columns: 1fr; } }
+  .kort {
+    background: #fff;
+    border: 1px solid var(--kant);
+    border-radius: 12px;
+    padding: 22px;
+  }
+  h2 { margin: 0 0 14px; font-size: 1.05rem; font-weight: 600; }
+  label { display: block; font-size: .85rem; margin: 14px 0 4px; }
+  input {
+    width: 100%;
+    padding: 10px 12px;
+    font: inherit;
+    border: 1px solid var(--kant);
+    border-radius: 8px;
+  }
+  input:focus { outline: 2px solid var(--mork-gronn); outline-offset: 1px; }
+  button {
+    font: inherit;
+    border: 0;
+    border-radius: 999px;
+    padding: 11px 20px;
+    cursor: pointer;
+  }
+  .primar {
+    margin-top: 20px;
+    width: 100%;
+    background: var(--energisk);
+    color: var(--mork-gronn);
+    font-weight: 600;
+  }
+  .sekundar { background: var(--mork-gronn); color: #fff; font-size: .9rem; }
+  .sekundar.ok { background: #188918; }
+  .tom { color: #878480; font-size: .95rem; }
+  .sig-blokk + .sig-blokk { margin-top: 22px; padding-top: 22px; border-top: 1px solid var(--kant); }
+  .sig-topp { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .sig-topp h3 { margin: 0; font-size: .95rem; font-weight: 600; }
+  .forhandsvisning {
+    border: 1px dashed var(--kant);
+    border-radius: 8px;
+    padding: 16px;
+    background: #fff;
+    overflow-x: auto;
+  }
+  .varsel {
+    background: var(--lys-gul);
+    border: 1px solid #fbc02d;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: .85rem;
+    margin-bottom: 16px;
+  }
+  details { margin-top: 22px; font-size: .9rem; }
+  summary { cursor: pointer; font-weight: 600; }
+  details ol { padding-left: 20px; line-height: 1.6; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="inner">
+    <h1>E-postsignatur</h1>
+    <p>Fyll inn, generer og lim inn i Outlook.</p>
+  </div>
+</header>
+
+<main>
+  <form class="kort" id="skjema" autocomplete="on">
+    <h2>Dine opplysninger</h2>
+
+    <label for="navn">Navn</label>
+    <input id="navn" name="name" required placeholder="Ola Nordmann">
+
+    <label for="tittel">Stilling</label>
+    <input id="tittel" name="organization-title" required placeholder="Konsulent">
+
+    <label for="telefon">Telefon</label>
+    <input id="telefon" name="tel" type="tel" required placeholder="97 96 73 30">
+
+    <button type="submit" class="primar">Generer signatur</button>
+  </form>
+
+  <section class="kort">
+    <h2>Signaturer</h2>
+
+    <div class="varsel" id="lokal-varsel" hidden>
+      Siden er åpnet lokalt, så logoen peker til en fil på din maskin. Bruk den publiserte versjonen på GitHub Pages når du lager signaturen din.
+    </div>
+
+    <p class="tom" id="tom">Fyll inn skjemaet og trykk «Generer signatur».</p>
+
+    <div id="resultat" hidden>
+      <div class="sig-blokk">
+        <div class="sig-topp">
+          <h3>Ny e-post</h3>
+          <button type="button" class="sekundar" data-kopier="sig-ny">Kopier</button>
+        </div>
+        <div class="forhandsvisning" id="sig-ny"></div>
+      </div>
+
+      <div class="sig-blokk">
+        <div class="sig-topp">
+          <h3>Svar og videresending</h3>
+          <button type="button" class="sekundar" data-kopier="sig-svar">Kopier</button>
+        </div>
+        <div class="forhandsvisning" id="sig-svar"></div>
+      </div>
+
+      <details>
+        <summary>Slik legger du den inn i Outlook</summary>
+        <ol>
+          <li>Åpne Outlook → <b>Innstillinger</b> → <b>Konto</b> → <b>Signaturer</b>.</li>
+          <li>Lag en ny signatur kalt «Holte – ny», og lim inn signaturen for ny e-post.</li>
+          <li>Lag en til kalt «Holte – svar», og lim inn signaturen for svar.</li>
+          <li>Under standardsignaturer: velg «Holte – ny» for nye meldinger og «Holte – svar» for svar/videresending.</li>
+          <li>Lagre.</li>
+        </ol>
+      </details>
+    </div>
+  </section>
+</main>
+
+<script>
+  const NETTSIDE = "https://holteconsulting.no";
+  // Logoen ligger ved siden av index.html, så adressen blir riktig uansett hvor siden publiseres
+  const LOGO_URL = new URL("logo.png", location.href).href;
+  // 6,86 x 1,69 cm ved 96 dpi
+  const LOGO_BREDDE = 259;
+  const LOGO_HOYDE = 64;
+
+  const felt = {
+    navn: document.getElementById("navn"),
+    tittel: document.getElementById("tittel"),
+    telefon: document.getElementById("telefon"),
+  };
+
+  if (location.protocol === "file:") {
+    document.getElementById("lokal-varsel").hidden = false;
+  }
+
+  // Husk det brukeren fylte inn sist (kun i egen nettleser)
+  try {
+    const lagret = JSON.parse(localStorage.getItem("holte-signatur") || "{}");
+    for (const k in felt) if (lagret[k]) felt[k].value = lagret[k];
+  } catch (e) {}
+
+  function escape(s) {
+    return s.replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+
+  // 97967330 / 4797967330 / +47 979 67 330 → +47 97 96 73 30
+  function formaterTelefon(raw) {
+    let siffer = raw.replace(/\D/g, "");
+    if (siffer.length === 10 && siffer.startsWith("47")) siffer = siffer.slice(2);
+    if (siffer.length === 12 && siffer.startsWith("0047")) siffer = siffer.slice(4);
+    if (siffer.length === 8) return "+47 " + siffer.match(/../g).join(" ");
+    return raw.trim();
+  }
+
+  function lagSignatur({ navn, tittel, telefon }, medLogo) {
+    const stil = "font-family:Aptos,Calibri,Arial,sans-serif;font-size:11pt;color:#000000;line-height:1.35;";
+    let html =
+      `<div style="${stil}">` +
+      `Vennlig hilsen<br>` +
+      `${escape(navn)}<br>` +
+      `${escape(tittel)}<br>` +
+      `${escape(telefon)}`;
+
+    if (medLogo) {
+      html +=
+        `<br><a href="${NETTSIDE}" style="color:#0563C1;">${NETTSIDE}</a>` +
+        `<br><br>` +
+        `<a href="${NETTSIDE}"><img src="${LOGO_URL}" alt="Holte Consulting" ` +
+        `width="${LOGO_BREDDE}" height="${LOGO_HOYDE}" ` +
+        `style="width:${LOGO_BREDDE}px;height:${LOGO_HOYDE}px;border:0;display:block;"></a>`;
+    }
+    return html + `</div>`;
+  }
+
+  function lagRenTekst({ navn, tittel, telefon }, medLogo) {
+    let t = `Vennlig hilsen\n${navn}\n${tittel}\n${telefon}`;
+    if (medLogo) t += `\n${NETTSIDE}`;
+    return t;
+  }
+
+  let data = null;
+
+  document.getElementById("skjema").addEventListener("submit", e => {
+    e.preventDefault();
+    data = {
+      navn: felt.navn.value.trim(),
+      tittel: felt.tittel.value.trim(),
+      telefon: formaterTelefon(felt.telefon.value),
+    };
+    felt.telefon.value = data.telefon;
+
+    try {
+      localStorage.setItem("holte-signatur", JSON.stringify(data));
+    } catch (e) {}
+
+    document.getElementById("sig-ny").innerHTML = lagSignatur(data, true);
+    document.getElementById("sig-svar").innerHTML = lagSignatur(data, false);
+    document.getElementById("tom").hidden = true;
+    document.getElementById("resultat").hidden = false;
+  });
+
+  async function kopier(id, knapp) {
+    const medLogo = id === "sig-ny";
+    const html = lagSignatur(data, medLogo);
+    const tekst = lagRenTekst(data, medLogo);
+
+    try {
+      // Moderne måte: legger signaturen på utklippstavla som formatert HTML
+      await navigator.clipboard.write([
+        new ClipboardItem({
+          "text/html": new Blob([html], { type: "text/html" }),
+          "text/plain": new Blob([tekst], { type: "text/plain" }),
+        }),
+      ]);
+    } catch (err) {
+      // Reserve: marker forhåndsvisningen og kopier den
+      const node = document.getElementById(id);
+      const range = document.createRange();
+      range.selectNodeContents(node);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+      document.execCommand("copy");
+      sel.removeAllRanges();
+    }
+
+    const original = knapp.textContent;
+    knapp.textContent = "Kopiert ✓";
+    knapp.classList.add("ok");
+    setTimeout(() => {
+      knapp.textContent = original;
+      knapp.classList.remove("ok");
+    }, 1800);
+  }
+
+  document.querySelectorAll("[data-kopier]").forEach(knapp => {
+    knapp.addEventListener("click", () => kopier(knapp.dataset.kopier, knapp));
+  });
+</script>
+</body>
+</html>
